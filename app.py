@@ -499,22 +499,6 @@ class CircuitDiagramGenerator:
         reparsed = minidom.parseString(rough_string)
         return reparsed.toprettyxml(indent="  ")
 
-# Flask アプリケーション
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/generate', methods=['POST'])
-def generate_circuit():
-    data = request.get_json()
-    description = data.get('description', '')
-    
-    generator = CircuitDiagramGenerator()
-    generator.parse_input(description)
-    svg_content = generator.generate_svg()
-    
-    return jsonify({'svg': svg_content})
-
 # HTMLテンプレート
 html_template = '''
 <!DOCTYPE html>
@@ -699,17 +683,21 @@ html_template = '''
 </html>
 '''
 
-# templatesディレクトリが存在しない場合のために、動的にテンプレートを返す
-@app.route('/templates/<path:filename>')
-def templates(filename):
-    if filename == 'index.html':
-        return html_template
-    return "Template not found", 404
-
-# テンプレートを直接返すためのルート
+# Flask アプリケーション
 @app.route('/')
 def index():
     return html_template
+
+@app.route('/generate', methods=['POST'])
+def generate_circuit():
+    data = request.get_json()
+    description = data.get('description', '')
+    
+    generator = CircuitDiagramGenerator()
+    generator.parse_input(description)
+    svg_content = generator.generate_svg()
+    
+    return jsonify({'svg': svg_content})
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
